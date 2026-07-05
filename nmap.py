@@ -13,12 +13,11 @@ N = "\033[0m"
 def banner():
     print(f"""{C}{B}
 ╔══════════════════════════════════════════════════╗
-║        PORT SCANNER PRO                           ║
-║        Nmap-like Scanner in Python                ║
+║        NMAP.PY - Port Scanner                    ║
+║        Nmap-like Scanner in Python               ║
 ╚══════════════════════════════════════════════════╝{N}
 """)
 
-# Base de datos de servicios comunes
 SERVICES = {
     20: "FTP-DATA", 21: "FTP", 22: "SSH", 23: "Telnet", 25: "SMTP",
     42: "WINS", 43: "WHOIS", 53: "DNS", 67: "DHCP-SERVER", 68: "DHCP-CLIENT",
@@ -53,11 +52,9 @@ SERVICES = {
 }
 
 def get_service(port):
-    """Obtiene el nombre del servicio para un puerto"""
     return SERVICES.get(port, "unknown")
 
 def scan_port(host, port, timeout=1):
-    """Escanea un puerto específico"""
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(timeout)
@@ -68,7 +65,6 @@ def scan_port(host, port, timeout=1):
         return False
 
 def grab_banner(host, port, timeout=2):
-    """Intenta obtener el banner del servicio"""
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(timeout)
@@ -83,9 +79,8 @@ def grab_banner(host, port, timeout=2):
 def main():
     banner()
     
-    target = input(f"{B}IP o dominio a escanear:{N} ").strip()
+    target = input(f"{B}IP o dominio:{N} ").strip()
     
-    # Resolver dominio a IP
     try:
         ip = socket.gethostbyname(target)
         if ip != target:
@@ -94,13 +89,13 @@ def main():
         print(f"\n{R}[!] No se pudo resolver: {target}{N}")
         return
     
-    print(f"\n{B}[*] Opciones de escaneo:{N}")
-    print(f"    1. Puertos comunes (Top 100)")
-    print(f"    2. Puertos web (80, 443, 8080, 8443, 3000, 5000, 8000, 8888, 9000, 9090)")
-    print(f"    3. Puertos de base de datos (3306, 5432, 1433, 27017, 6379, 9200)")
-    print(f"    4. Puertos de acceso remoto (22, 23, 3389, 5900, 5800)")
+    print(f"\n{B}[*] Modo de escaneo:{N}")
+    print(f"    1. Top 100 puertos")
+    print(f"    2. Puertos web")
+    print(f"    3. Puertos de base de datos")
+    print(f"    4. Puertos de acceso remoto")
     print(f"    5. Rango personalizado")
-    print(f"    6. Todos los puertos (1-65535) - MUY LENTO")
+    print(f"    6. Todos los puertos (1-65535)")
     
     opcion = input(f"\n{B}Elige (1-6, Enter=1):{N} ").strip() or "1"
     
@@ -108,15 +103,13 @@ def main():
         ports = [21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 445,
                  993, 995, 1433, 1521, 1723, 3306, 3389, 5432, 5900, 5985, 5986,
                  6379, 6443, 8080, 8443, 8888, 9090, 9200, 9300, 11211, 15672,
-                 27017, 27018, 27019, 28015, 50000, 50030, 50070]
-        ports += [3000, 5000, 7000, 8000, 9000, 10000, 20000, 22222, 44444]
-        # Puertos web adicionales
-        ports += [81, 82, 83, 84, 85, 88, 800, 808, 888, 900, 909, 1000, 2000]
-        ports += [3001, 4000, 4001, 4002, 4040, 4444, 5001, 5050, 5555, 5601]
-        ports += [6000, 6001, 6666, 6667, 6969, 7001, 7002, 7070, 7777, 8001]
-        ports += [8009, 8081, 8082, 8083, 8089, 8181, 8444, 8880, 8889, 8989]
-        ports += [9001, 9002, 9091, 9095, 9201, 9999, 10001, 12345, 31337, 49152]
-        ports = sorted(set(ports))
+                 27017, 27018, 27019, 28015, 50000, 50030, 50070,
+                 3000, 5000, 7000, 8000, 9000, 10000, 20000, 22222, 44444,
+                 81, 82, 83, 84, 85, 88, 800, 808, 888, 900, 909, 1000, 2000,
+                 3001, 4000, 4001, 4002, 4040, 4444, 5001, 5050, 5555, 5601,
+                 6000, 6001, 6666, 6667, 6969, 7001, 7002, 7070, 7777, 8001,
+                 8009, 8081, 8082, 8083, 8089, 8181, 8444, 8880, 8889, 8989,
+                 9001, 9002, 9091, 9095, 9201, 9999, 10001, 12345, 31337, 49152]
     elif opcion == "2":
         ports = [80, 81, 82, 83, 84, 85, 88, 443, 800, 808, 888, 900, 909,
                  1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 8080, 8443,
@@ -129,21 +122,20 @@ def main():
                  5985, 5986, 10000]
     elif opcion == "5":
         try:
-            inicio = int(input(f"{B}Puerto inicial:{N} ").strip())
-            fin = int(input(f"{B}Puerto final:{N} ").strip())
+            inicio = int(input(f"{B}Puerto inicial:{N} "))
+            fin = int(input(f"{B}Puerto final:{N} "))
             ports = list(range(inicio, fin + 1))
         except:
             print(f"{R}[!] Puertos inválidos{N}")
             return
     elif opcion == "6":
         ports = list(range(1, 65536))
-        print(f"{A}[!] Esto puede tardar MUCHO tiempo{N}")
     else:
         ports = list(range(1, 1025))
     
     print(f"\n{C}{'='*50}{N}")
-    print(f"{C}   ESCANEANDO {target} ({ip}){N}")
-    print(f"{C}   Puertos a probar: {len(ports)}{N}")
+    print(f"{C}   NMAP.PY - {target} ({ip}){N}")
+    print(f"{C}   Puertos: {len(ports)}{N}")
     print(f"{C}   Hora: {datetime.now().strftime('%H:%M:%S')}{N}")
     print(f"{C}{'='*50}{N}\n")
     
@@ -160,53 +152,43 @@ def main():
             else:
                 print(f"  {V}[OPEN] {port}/tcp - {service}{N}")
             
-            open_ports.append({
-                "port": port,
-                "service": service,
-                "banner": banner
-            })
+            open_ports.append({"port": port, "service": service, "banner": banner})
         
-        # Barra de progreso cada 50 puertos
         if i % 50 == 0:
             pct = (i / len(ports)) * 100
-            print(f"  {A}[*] Progreso: {i}/{len(ports)} ({pct:.1f}%){N}")
+            print(f"  {A}[*] {i}/{len(ports)} ({pct:.1f}%){N}")
     
     end_time = datetime.now()
     duration = (end_time - start_time).total_seconds()
     
-    # Guardar resultados
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-    archivo = f"portscan_{target.replace('.', '_')}_{ts}.txt"
+    archivo = f"nmap_{target.replace('.', '_')}_{ts}.txt"
     
     with open(archivo, "w") as f:
-        f.write(f"Port Scanner Pro\n")
-        f.write(f"Objetivo: {target} ({ip})\n")
-        f.write(f"Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write(f"Duración: {duration:.1f}s\n")
-        f.write(f"Puertos escaneados: {len(ports)}\n")
+        f.write(f"NMAP.PY Scan Report\n")
+        f.write(f"Target: {target} ({ip})\n")
+        f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Duration: {duration:.1f}s\n")
+        f.write(f"Ports scanned: {len(ports)}\n")
         f.write(f"{'='*50}\n\n")
-        
         for p in open_ports:
             f.write(f"[OPEN] {p['port']}/tcp - {p['service']}\n")
             if p['banner']:
                 f.write(f"  Banner: {p['banner']}\n")
     
-    # Resumen
     print(f"\n{C}{'='*50}{N}")
-    print(f"{C}{B}   RESULTADOS{N}")
+    print(f"{C}{B}   NMAP.PY DONE{N}")
     print(f"{C}{'='*50}{N}")
-    print(f"  Total puertos: {len(ports)}")
-    print(f"  Puertos abiertos: {V}{len(open_ports)}{N}")
-    print(f"  Duración: {duration:.1f} segundos")
-    print(f"  Archivo: {archivo}")
+    print(f"  Scanned: {len(ports)} ports in {duration:.1f}s")
+    print(f"  Open: {V}{len(open_ports)}{N}")
+    print(f"  Report: {archivo}")
     print(f"{C}{'='*50}{N}\n")
     
     if open_ports:
-        print(f"{B}Puertos abiertos:{N}")
         for p in open_ports:
             print(f"  {V}{p['port']}/tcp{N} - {p['service']}")
     else:
-        print(f"  {A}No se encontraron puertos abiertos.{N}")
+        print(f"  {A}No open ports found.{N}")
     
     os.system("pause")
 
